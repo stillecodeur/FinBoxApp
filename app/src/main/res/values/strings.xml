@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">FinboxApp</string>
+    <string name="channel_id">Location</string>
+    <string name="location_tracking">Location Tracking</string>
+    <string name="location_tracked_success_msg">Location tracked successfully.</string>
+    <string name="location_info">Location Info</string>
+    <string name="latitude">Latitude</string>
+    <string name="longitude">Longitude</string>
+</resources>
