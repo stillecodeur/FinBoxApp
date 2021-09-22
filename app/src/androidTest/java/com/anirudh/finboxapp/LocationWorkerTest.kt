@@ -40,7 +40,7 @@ class LocationWorkerTest {
     @Throws(Exception::class)
     fun testPeriodicWork() {
 
-        val request = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES)
+        val request = PeriodicWorkRequestBuilder<LocationWorker>(1, TimeUnit.HOURS)
             .build()
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val workManager = WorkManager.getInstance(context)

@@ -43,65 +43,33 @@ class LocationWorker @AssistedInject constructor(
 
     @SuppressLint("MissingPermission")
     override fun doWork(): Result {
-        Log.d("LocationWorker", "doWork: ")
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
-        setUpLocationRequest()
-        setUpLocationUpdatesCallback()
-        fusedLocationClient.requestLocationUpdates(
-            locationRequest,
-            locationCallback,
-            Looper.getMainLooper()
-        )
-        return Result.success()
-    }
+        fusedLocationClient.lastLocation.addOnSuccessListener {
+            if (it != null) {
+                val lastLocation = it
+                val info = LocationInfo(
+                    lastLocation.latitude,
+                    lastLocation.longitude,
+                    lastLocation.time
+                )
+                repository.insert(info)
+                val des = "Lat:" + lastLocation.latitude + " - Lng:" + lastLocation.longitude
+                NotificationManager.notify(
+                    context, context.getString(R.string.location_tracked_success_msg),
+                    des
+                )
 
-    private fun setUpLocationRequest() {
-        locationRequest = LocationRequest.create().apply {
-            interval = TimeUnit.HOURS.toMillis(15)
-            fastestInterval = TimeUnit.HOURS.toMillis(15)
-            maxWaitTime = TimeUnit.HOURS.toMillis(15)
-            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        }
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun setUpLocationUpdatesCallback() {
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult?) {
-
-                if (locationResult != null) {
-                    val lastLocation = locationResult.lastLocation
-                    Log.d(
-                        "LocationWorker",
-                        "setUpLocationUpdatesCallback: " + lastLocation.latitude
-                    )
-                    val info = LocationInfo(
-                        lastLocation.latitude,
-                        lastLocation.longitude,
-                        lastLocation.time
-                    )
-                    repository.insert(info)
-                    val des = "Lat:" + lastLocation.latitude + " - Lng:" + lastLocation.longitude
-                    NotificationManager.notify(
-                        context, context.getString(R.string.location_tracked_success_msg),
-                        des
-                    )
-
-                } else {
-                    Log.e("LocationTrackerService", "Location not found")
-                }
+            } else {
+                Log.e("LocationTrackerService", "Location not found")
             }
         }
+
+        return Result.success()
     }
 
 
     override fun onStopped() {
         super.onStopped()
-        fusedLocationClient.removeLocationUpdates(locationCallback)
-        Log.d(
-            "LocationWorker",
-            "onStopped "
-        )
         NotificationManager.cancel(context)
     }
 }

@@ -66,7 +66,6 @@ class HomeActivity : AppCompatActivity() {
             )
         } else {
             if (!PreferenceUtils.hasRequestCreated(this)) {
-                Log.e("HomeActivity", "request not created")
                 createLocationTrackRequest()
                 PreferenceUtils.setRequestCreated(this, true)
             }
@@ -105,7 +104,7 @@ class HomeActivity : AppCompatActivity() {
 
     private fun createLocationTrackRequest() {
         val work = PeriodicWorkRequestBuilder<LocationWorker>(
-            15, TimeUnit.MINUTES
+            1, TimeUnit.HOURS
         )
             .addTag(ConstantUtils.LOCATION_WORKER_TAG)
             .build()
@@ -114,7 +113,7 @@ class HomeActivity : AppCompatActivity() {
                 ConstantUtils.LOCATION_WORKER_TAG,
                 ExistingPeriodicWorkPolicy.KEEP,
                 work
-            );
+            )
 
     }
 
@@ -129,7 +128,6 @@ class HomeActivity : AppCompatActivity() {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
                 ) {
                     if (!PreferenceUtils.hasRequestCreated(this)) {
-                        Log.e("HomeActivity", "request not created")
                         createLocationTrackRequest()
                         PreferenceUtils.setRequestCreated(this, true)
                     }
