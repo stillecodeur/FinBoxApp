@@ -90,4 +90,9 @@ class LocationWorker @AssistedInject constructor(
         }
     }
 
+    override fun onStopped() {
+        super.onStopped()
+        NotificationManager.cancel(context)
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+    }
 }
