@@ -4,14 +4,20 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
+import android.view.View
 import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.work.*
 import com.anirudh.finboxapp.databinding.ActivityHomeBinding
 import com.anirudh.finboxapp.global.LocationWorker
+import com.anirudh.finboxapp.utils.ConstantUtils
+import com.anirudh.finboxapp.utils.PreferenceUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -23,6 +29,7 @@ class HomeActivity : AppCompatActivity() {
 
     companion object {
         const val REQUEST_CODE_PERMISSION_LOCATION = 100
+
     }
 
     private var _binding: ActivityHomeBinding? = null
@@ -58,7 +65,12 @@ class HomeActivity : AppCompatActivity() {
                 REQUEST_CODE_PERMISSION_LOCATION
             )
         } else {
-            createLocationTrackRequest()
+            if (!PreferenceUtils.hasRequestCreated(this)) {
+                Log.e("HomeActivity", "request not created")
+                createLocationTrackRequest()
+                PreferenceUtils.setRequestCreated(this, true)
+            }
+
         }
     }
 
@@ -71,19 +83,38 @@ class HomeActivity : AppCompatActivity() {
         locationInfoAdapter = LocationInfoAdapter()
         binding.recyclerView.adapter = locationInfoAdapter
 
+
         lifecycleScope.launch {
             locationInfoViewModel.getAllInfo.collectLatest {
                 locationInfoAdapter.submitData(it)
             }
-        }
 
+        }
+        locationInfoAdapter.addLoadStateListener { loadState ->
+            if (loadState.source.refresh is LoadState.NotLoading && loadState.append.endOfPaginationReached && locationInfoAdapter.itemCount < 1) {
+                binding.recyclerView.isVisible = false
+                binding.layoutEmpty.isVisible = true
+            } else {
+                binding.recyclerView.isVisible = true
+                binding.layoutEmpty.isVisible = false
+            }
+        }
     }
 
+
+
     private fun createLocationTrackRequest() {
-        val work = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES)
+        val work = PeriodicWorkRequestBuilder<LocationWorker>(
+            15, TimeUnit.MINUTES
+        )
+            .addTag(ConstantUtils.LOCATION_WORKER_TAG)
             .build()
         WorkManager.getInstance(this)
-            .enqueueUniquePeriodicWork("location_job", ExistingPeriodicWorkPolicy.KEEP, work);
+            .enqueueUniquePeriodicWork(
+                ConstantUtils.LOCATION_WORKER_TAG,
+                ExistingPeriodicWorkPolicy.KEEP,
+                work
+            );
 
     }
 
@@ -97,7 +128,11 @@ class HomeActivity : AppCompatActivity() {
             REQUEST_CODE_PERMISSION_LOCATION -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
                 ) {
-                    createLocationTrackRequest()
+                    if (!PreferenceUtils.hasRequestCreated(this)) {
+                        Log.e("HomeActivity", "request not created")
+                        createLocationTrackRequest()
+                        PreferenceUtils.setRequestCreated(this, true)
+                    }
                 }
                 return
             }

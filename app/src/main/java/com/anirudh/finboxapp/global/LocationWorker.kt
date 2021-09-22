@@ -9,14 +9,12 @@ import android.os.Looper
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.hilt.work.HiltWorker
-import androidx.work.Data
-import androidx.work.Worker
-import androidx.work.WorkerParameters
-import androidx.work.workDataOf
+import androidx.work.*
 import com.anirudh.finboxapp.R
 import com.anirudh.finboxapp.data.models.LocationInfo
 import com.anirudh.finboxapp.location.NotificationManager
 import com.anirudh.finboxapp.ui.location.LocationRepository
+import com.anirudh.finboxapp.utils.ConstantUtils
 import com.google.android.gms.location.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -45,7 +43,7 @@ class LocationWorker @AssistedInject constructor(
 
     @SuppressLint("MissingPermission")
     override fun doWork(): Result {
-
+        Log.d("LocationWorker", "doWork: ")
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
         setUpLocationRequest()
         setUpLocationUpdatesCallback()
@@ -59,9 +57,9 @@ class LocationWorker @AssistedInject constructor(
 
     private fun setUpLocationRequest() {
         locationRequest = LocationRequest.create().apply {
-            interval = TimeUnit.SECONDS.toMillis(60)
-            fastestInterval = TimeUnit.SECONDS.toMillis(30)
-            maxWaitTime = TimeUnit.MINUTES.toMillis(2)
+            interval = TimeUnit.HOURS.toMillis(15)
+            fastestInterval = TimeUnit.HOURS.toMillis(15)
+            maxWaitTime = TimeUnit.HOURS.toMillis(15)
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
     }
@@ -70,8 +68,13 @@ class LocationWorker @AssistedInject constructor(
     private fun setUpLocationUpdatesCallback() {
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult?) {
+
                 if (locationResult != null) {
                     val lastLocation = locationResult.lastLocation
+                    Log.d(
+                        "LocationWorker",
+                        "setUpLocationUpdatesCallback: " + lastLocation.latitude
+                    )
                     val info = LocationInfo(
                         lastLocation.latitude,
                         lastLocation.longitude,
@@ -83,6 +86,7 @@ class LocationWorker @AssistedInject constructor(
                         context, context.getString(R.string.location_tracked_success_msg),
                         des
                     )
+
                 } else {
                     Log.e("LocationTrackerService", "Location not found")
                 }
@@ -90,9 +94,14 @@ class LocationWorker @AssistedInject constructor(
         }
     }
 
+
     override fun onStopped() {
         super.onStopped()
-        NotificationManager.cancel(context)
         fusedLocationClient.removeLocationUpdates(locationCallback)
+        Log.d(
+            "LocationWorker",
+            "onStopped "
+        )
+        NotificationManager.cancel(context)
     }
 }

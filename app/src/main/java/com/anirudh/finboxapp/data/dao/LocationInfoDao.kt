@@ -18,4 +18,7 @@ interface LocationInfoDao {
     @Query("SELECT * FROM location_info")
     fun getAllInfo(): PagingSource<Int, LocationInfo>
 
+    @Query("SELECT * FROM location_info")
+    fun getAllInfoTest(): List<LocationInfo>
+
 }
