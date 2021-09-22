@@ -11,7 +11,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.work.WorkManager
-import com.anirudh.finboxapp.HomeActivity
+import com.anirudh.finboxapp.ui.location.HomeActivity
 import com.anirudh.finboxapp.R
 
 class NotificationManager {
@@ -44,7 +44,7 @@ class NotificationManager {
                 .setContentText(text)
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setContentIntent(pi)
-                .setAutoCancel(false).build()
+                .setAutoCancel(true).build()
             notify(context, notification)
         }
 
@@ -84,7 +84,7 @@ class NotificationManager {
                     .setContentText(text)
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .setContentIntent(pi)
-                    .setAutoCancel(false)
+                    .setAutoCancel(true)
             notify(context, builder.build())
         }
 

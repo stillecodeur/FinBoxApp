@@ -4,13 +4,25 @@ import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.paging.PagingDataAdapter
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.anirudh.finboxapp.data.models.LocationInfo
 import com.anirudh.finboxapp.databinding.LocationInfoRowBinding
 import com.anirudh.finboxapp.utils.AppUtils
 
-class LocationInfoAdapter(val locationInfos: List<LocationInfo>) :
-    RecyclerView.Adapter<LocationInfoAdapter.LocationInfoHolder>() {
+class LocationInfoAdapter() :PagingDataAdapter<LocationInfo,LocationInfoAdapter.
+LocationInfoHolder>(DIFF_CALLBACK) {
+
+    companion object{
+        val DIFF_CALLBACK=object :DiffUtil.ItemCallback<LocationInfo>(){
+            override fun areItemsTheSame(oldItem: LocationInfo, newItem: LocationInfo): Boolean =oldItem.id==newItem.id
+            override fun areContentsTheSame(oldItem: LocationInfo, newItem: LocationInfo): Boolean {
+                return oldItem==newItem
+            }
+
+        }
+    }
 
     inner class LocationInfoHolder(private val locationInfoRowBinding: LocationInfoRowBinding) :
         RecyclerView.ViewHolder(locationInfoRowBinding.root) {
@@ -32,14 +44,12 @@ class LocationInfoAdapter(val locationInfos: List<LocationInfo>) :
     }
 
     override fun onBindViewHolder(holder: LocationInfoHolder, position: Int) {
-        val info = locationInfos[position]
-        if (info.latitude != null && info.longitude != null && info.time != null) {
+        val info=getItem(position)
+        if (info?.latitude != null && info.longitude != null && info.time != null) {
             holder.bind(info)
         }
     }
 
 
-    override fun getItemCount(): Int {
-        return locationInfos.size
-    }
+
 }

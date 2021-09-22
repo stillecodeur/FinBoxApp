@@ -1,21 +1,20 @@
-package com.anirudh.finboxapp
+package com.anirudh.finboxapp.ui.location
 
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.work.*
 import com.anirudh.finboxapp.databinding.ActivityHomeBinding
 import com.anirudh.finboxapp.global.LocationWorker
-import com.anirudh.finboxapp.ui.location.LocationInfoAdapter
-import com.anirudh.finboxapp.ui.location.LocationInfoViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -28,7 +27,7 @@ class HomeActivity : AppCompatActivity() {
 
     private var _binding: ActivityHomeBinding? = null
     private val binding get() = _binding!!
-    private var locationInfoAdapter: LocationInfoAdapter?=null
+    private lateinit var locationInfoAdapter: LocationInfoAdapter
     private val locationInfoViewModel: LocationInfoViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,34 +63,27 @@ class HomeActivity : AppCompatActivity() {
     }
 
 
-
     private fun setUpLocationList() {
         val lm = LinearLayoutManager(this)
         lm.orientation = RecyclerView.VERTICAL
         binding.recyclerView.layoutManager = lm
-        locationInfoViewModel.getAllInfo.observe(this, Observer {
-            if (it != null) {
-                if (locationInfoAdapter == null) {
-                    locationInfoAdapter = LocationInfoAdapter(it)
-                    binding.recyclerView.adapter=locationInfoAdapter
-                }
 
-                locationInfoAdapter?.notifyDataSetChanged()
+        locationInfoAdapter = LocationInfoAdapter()
+        binding.recyclerView.adapter = locationInfoAdapter
+
+        lifecycleScope.launch {
+            locationInfoViewModel.getAllInfo.collectLatest {
+                locationInfoAdapter.submitData(it)
             }
-        })
+        }
+
     }
 
     private fun createLocationTrackRequest() {
-//        val work = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES)
-//            .build()
-//        WorkManager.getInstance(this)
-//            .enqueueUniquePeriodicWork("location_job", ExistingPeriodicWorkPolicy.KEEP, work);
-
-        val uploadWorkRequest: WorkRequest =
-            OneTimeWorkRequestBuilder<LocationWorker>()
-                .build()
-
-        WorkManager.getInstance(this).enqueue(uploadWorkRequest)
+        val work = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES)
+            .build()
+        WorkManager.getInstance(this)
+            .enqueueUniquePeriodicWork("location_job", ExistingPeriodicWorkPolicy.KEEP, work);
 
     }
 
