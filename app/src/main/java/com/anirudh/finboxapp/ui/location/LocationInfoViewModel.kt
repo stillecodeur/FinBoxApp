@@ -13,9 +13,4 @@ class LocationInfoViewModel @Inject constructor(private val locationRepository: 
     ViewModel() {
     val getAllInfo: LiveData<List<LocationInfo>> get() = locationRepository.allLocationInfo
 
-    fun insertLocationInfo(locationInfo: LocationInfo) {
-        viewModelScope.launch {
-            locationRepository.insert(locationInfo)
-        }
-    }
 }

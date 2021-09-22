@@ -5,6 +5,8 @@ import androidx.lifecycle.LiveData
 import com.anirudh.finboxapp.data.dao.LocationInfoDao
 import com.anirudh.finboxapp.data.models.LocationInfo
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -13,10 +15,8 @@ class LocationRepository @Inject constructor(private val locationInfoDao: Locati
 
     val allLocationInfo: LiveData<List<LocationInfo>> = locationInfoDao.getAllInfo()
 
-    @WorkerThread
-    suspend fun insert(locationInfo: LocationInfo) = withContext(Dispatchers.IO) {
-        locationInfoDao.insertInfo(locationInfo)
-    }
 
+    fun insert(locationInfo: LocationInfo) =
+        GlobalScope.launch { locationInfoDao.insertInfo(locationInfo) }
 
 }
