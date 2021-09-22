@@ -1,4 +1,4 @@
-package com.anirudh.finboxapp.location
+package com.anirudh.finboxapp.global
 
 import android.app.Notification
 import android.app.NotificationChannel

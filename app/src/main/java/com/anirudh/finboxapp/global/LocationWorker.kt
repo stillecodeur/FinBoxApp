@@ -1,28 +1,17 @@
 package com.anirudh.finboxapp.global
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.pm.PackageManager
-import android.location.Location
-import android.os.Looper
 import android.util.Log
-import androidx.core.app.ActivityCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.*
 import com.anirudh.finboxapp.R
 import com.anirudh.finboxapp.data.models.LocationInfo
-import com.anirudh.finboxapp.location.NotificationManager
 import com.anirudh.finboxapp.ui.location.LocationRepository
-import com.anirudh.finboxapp.utils.ConstantUtils
 import com.google.android.gms.location.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import javax.inject.Provider
 
 @HiltWorker
 class LocationWorker @AssistedInject constructor(
